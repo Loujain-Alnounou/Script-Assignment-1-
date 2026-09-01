@@ -1,0 +1,15 @@
+# Ignore temporary output files except the ones we must submit 
+*.txt
+!git_log_lab*.txt
+!collector_output.txt
+!monitor_with_alerts.txt
+!log_summary.txt
+!daily_report_*.txt
+!final_report.txt
+!syshealth_log_excerpt.txt
+
+# the .gitignore file tells git toignore all .txt files in the repository, 
+# except foooooor a specific list ooof files that must still be tracked and submitted 
+# *.txt : ignores every .txt file by default 
+# lines starting with ! are exceptions - they un-ignore specific files, 
+# forcing Git to still track them even though they end in .txt
