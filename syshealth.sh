@@ -13,6 +13,18 @@
 # Date: $(date +%Y-%m-%d)
 # ==============================================
 
+# PURPOSE:
+# This script checks the current state of the machine its run on and
+# puts together a short, readable summary of that informtion. It looks
+# at things like the computers name, how long its been running, how 
+# much disk space and memory are currently in use, and how many processes
+# are active at the moment. The report can either be shown right on the 
+# screen or saved to a file, depending on whether a filename is given when
+# the script is run. the goal is to have a quick, one-command way to check
+# ona systems's basic health without having to run several separarte 
+# commands manually each time.
+
+
 # --- Variables and quoting demonstration ---
 HOSTNAME=$(hostname)
 
@@ -123,4 +135,102 @@ PROCESS_COUNT=$(ps -e | wc -l)
 # of output. Piping that into "wc -l" ("word count", with -l for "lines")
 # counts how many lines were produced, which effectivelyy counts how many
 # processes are running. That number is stored in PROCESS_COOUNT.
+
+# --- Output handling ---
+OUTPUT_FILE="${1:-}" 
+
+# $1 refers to the first argument passed to the script on the command 
+# line. e.g. if you run "./syshealth.sh collector_output.txt", then
+# $1 holds the value "collector_output.txt" inside the script.
+
+# ${1:-} is a safer way to use that argument. The ":-" part means 
+# "if this variable is unset or empty, use this fallback value instead"
+# (here, the fallback is nothing - an empty string). So this line means:
+# "if an argument was given, use it; otherwise, just use an empty value"
+
+# If no argument is supplied when running the script, $1 simply doesnt 
+# exist. Using $1 directly in that case can trigger an error under
+# strict settings, since bash treats referencing an unset variable as
+# a problem. ${1:-} avoids this by safely falling back to an empty string
+# instead of failing
+
+# This is why ${1:-} is safer than $1 : it lets the script handle the 
+# "no argument given" case gracefully (falling back to printing the report
+# on screen instead of writing to a file), rather than risking an error
+# or unexpected behavior when the argument is missing.
+
+print_report() { 
+printf "=======================================\n"
+printf "System Health Report - %s\n" "$CURRENT_DATE"
+printf "Hostname     : %s\n" "$HOSTNAME"
+printf "Uptime       : %s\n" "$UPTIME"
+printf "Disk /       : %s\n" "$DISK_USAGE"
+printf "Memory used  : %s\n" "$MEMORY_USAGE"
+printf "Total processes : %s\n" "$PROCESS_COUNT"
+printf "======================================\n"
+}
+
+# the code above defines a function called print_report which is a reusable
+# block of code that when called later in the script, prints out a nicley
+# formatted report using all the variable we collected earlier
+
+# printf works like a template, the first part in quotes is the format
+# string, and %s is a placeholder meaning "insert a string value here".
+# whatever comes afdter the formar string fills in that placeholder
+
+
+if [ -n "$OUTPUT_FILE" ]; then 
+   print_report > "$OUTPUT_FILE"
+   echo "Report written to $OUTPUT_FILE"
+else 
+	print_report
+fi
+
+
+exit 0
+
+# EXPLANATION
+# if [ -n "$OUTPUT_FILE" ]; then
+# "if" starts a conditioonal check. [...] is a test command that evaluates 
+# whether something is true or false. "-n" checks whether teh string that 
+# follows is not empty (n= nonzero length). "; then" marks the start
+# of the code that runs if this is true. 
+
+# print_report > "$OUTPUT_FILE"
+# this calls teh print_report function we defined earlier, but instead
+# if letting its output go to the screen, the ">" symbol redirects that 
+# output into a file, specifically the filename stored in OUTPUT_FILE.
+# if teh file doesnt exits yet, it gets created; if it already exists,
+# its content gets overwritten. 
+
+# echo "Report written to $OUTPUT_FILE"
+# prints a simple confirmation message to the screen, letting the user 
+# know the report was saved and showing them the filename it was saved 
+# to. This just prints to teh screen normally (not redirected) 
+
+# else 
+# Marks the start of the code that runs only if the condition above was false
+
+# print_report 
+# Calls the same function again, but this time with no ">" redirection,
+# so its output just prints normally to the screen instead of file
+
+# fi
+# Closes the if/else block. ("fi" is just "if" spelled backwards, Bash's
+# way of marking where a conditional statement ends.)
+
+# exit 0 
+# Ends the script and returns an exit status of 0 to the operating 
+# system. In Linux/Unix convention, an exit status of 0 means the 
+# script finished successfully with no errors. This isnt required for 
+# the script work, but its good practice, especially if this script 
+# is ever called by another script.
+
+# explanation of .gitignore file:
+# the .gitignore file tells git to ignore all .txt files in the reposito>
+# except for a specific list of files that must still be tracked and sub>
+# *.txt : ignores every .txt file by default 
+# lines starting with ! are exceptions - they un-ignore specific files, 
+# forcing Git to still track them even though they end in .txt
+
 
