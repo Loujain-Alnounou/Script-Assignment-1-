@@ -79,3 +79,48 @@ EOF
 # Note: inside this cat block, the # symbols are NOT treated at comments, 
 # they are just plain text being printed to the screen analog with 
 # everything else between the two EOF markers. 
+
+# --- System metrics collection ---
+UPTIME=$(uptime -p)
+DISK_USAGE=$(df -h / | tail -1)
+MEMORY_USAGE=$(free -h | awk '/Mem:/ {print $3 "/" $2}')
+PROCESS_COUNT=$(ps -e | wc -l)
+
+# UPTIME=$(uptime -p): "uptime" is a command that reports how long the
+# system has been running since it waaas last booted/restarted. By default
+# it also shows extra info like the current time, number of logged-in users 
+# and load averages. the "-p" flag ("pretty") strips all that away  and gives 
+# just a simple phrase like "up 2 hours, 15 minutes". $(...) captures 
+# that phrase and stores it in the UPTIME variable . 
+
+# DISK USAGE=$(df -h / | tail -1): 
+# "df" (disk free) reports how much disk space is used and available on
+# mounted filesystem. The "-h" flag means "human-readable", it shows 
+# sizes like 8.6G instead of raw byte counts. which are hard to read.
+# the "/" tells df to report specifically on the root filesystem, not 
+# every mounted drive. Normally  df's output includes a header row
+# (Filesystem, Size, Used..) followed by the actual data row. Piping "|" into
+# "tail -1" keeps only the last line of output (the data row) and 
+# discards the header, since we only care about the numbers 
+# the "|" symbol is called a apipe. it takes the output of  one command 
+# and feeds it directly as an input to the next command, instead of 
+# printing it to the screen. 
+
+# MEMORY_USAGE=$(free -h | awk '/Mem:/ {print $3 "/" $2}')
+# "free" reports how much RAM is used vs available on the system. "-h" 
+# again means human-readable.free's output nnnormally has multiple rows
+# (Mem:, Swap:, ...), so we pipe it into "awk", a text-processing tool
+# that lets us search for and manipulate specific lines/columns. '/Mem:/'
+# tells awk to only look at the line that starts with "Mem:". Within that 
+# line, {print $3 "/" $2} means "print the 3rd column, then slash, then 
+# the 2nd column", infree's output, solumn 2 is total memory and column 3 is used memory,
+# so this builds a "used/total" string. 
+
+# PROCESS_COUNT=$(ps -e | wc -l):
+# "ps" lists information about currently running processes. The "-e" flag
+# means "show every process on the system", not just ones tied to the
+# current terminal session. Each running process gets printed as one line
+# of output. Piping that into "wc -l" ("word count", with -l for "lines")
+# counts how many lines were produced, which effectivelyy counts how many
+# processes are running. That number is stored in PROCESS_COOUNT.
+
